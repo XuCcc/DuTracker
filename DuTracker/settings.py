@@ -24,9 +24,9 @@ LOG_FORMAT = '%(asctime)s: %(message)s'
 
 DOWNLOADER_MIDDLEWARES = {
     'scrapy.downloadermiddleware.useragent.UserAgentMiddleware': None,
-    'getProduct.middlewares.RandomUserAgent': 500,
-    'getProduct.middlewares.RetryException': 551,
-    'getProduct.middlewares.RandomProxy': 760
+    'DuTracker.middlewares.RandomUserAgent': 500,
+    'DuTracker.middlewares.RetryException': 551,
+    'DuTracker.middlewares.RandomProxy': 760
 }
 PROXY_URL = 'http://127.0.0.1:8081'
 

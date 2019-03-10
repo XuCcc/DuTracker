@@ -40,7 +40,7 @@ class RandomProxy(object):
     @classmethod
     def from_crawler(cls, crawler):
         settings = crawler.settings
-        return cls(settings.ge('PROXY_URL'))
+        return cls(settings.get('PROXY_URL'))
 
     def __init__(self, proxy):
         self.proxy = proxy
@@ -89,7 +89,6 @@ class RetryException(RetryMiddleware):
             retryreq.dont_filter = True
             retryreq.priority = request.priority + self.priority_adjust
 
-
             stats.inc_value('retry/count')
             stats.inc_value('retry/reason_count/%s' % reason)
             log.debug(f'第 [{retries}] 次重试请求 目标页面 {request.url} ')
@@ -101,5 +100,5 @@ class RetryException(RetryMiddleware):
                 RetryUrl(
                     url=request.url,
                     reason=str(reason),
-                    callback=request.meta['callback']
+                    callback=request.meta.get('callback', default='UNKNOW')
                 )
