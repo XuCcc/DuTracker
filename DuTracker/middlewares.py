@@ -62,7 +62,8 @@ class RetryException(RetryMiddleware):
         status = json_data['status']
         if status == 403:
             log.warn(f'目标页面{request.url} 拒绝访问 提示信息 忽略请求')
-            return IgnoreRequest()
+            # return response
+            raise IgnoreRequest()
         if status != 200:
             log.warn(f'返回Json状态错误 目标页面 {request.url} 提示信息 {msg} 开始重试')
             return self._retry(request, 'Json Status Error', spider) or response
@@ -100,5 +101,6 @@ class RetryException(RetryMiddleware):
                 RetryUrl(
                     url=request.url,
                     reason=str(reason),
-                    callback=request.meta.get('callback', default='UNKNOW')
+                    callback=request.meta.get('callback', 'UNKNOW')
                 )
+            raise IgnoreRequest()
