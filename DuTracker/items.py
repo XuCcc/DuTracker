@@ -8,7 +8,31 @@
 import scrapy
 
 
-class DutrackerItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
+class BrandItem(scrapy.Item):
+    id = scrapy.Field()
+    name = scrapy.Field()
+    logo = scrapy.Field()
+
+
+class SerieItem(scrapy.Item):
+    id = scrapy.Field()
+    name = scrapy.Field()
+    coverUrl = scrapy.Field()
+
+
+class ProductItem(scrapy.Item):
+    id = scrapy.Field()
+    url = scrapy.Field()
+    title = scrapy.Field()
+    soldNum = scrapy.Field()
+    logo = scrapy.Field()
+    brandId = scrapy.Field()
+    categoryId = scrapy.Field()
+    images = scrapy.Field()
+    sellDate = scrapy.Field()
+    articleNumber = scrapy.Field()
+    authPrice = scrapy.Field()
+    goodsId = scrapy.Field()
+    sizeList = scrapy.Field()
+    imageAndText = scrapy.Field()
+    detailJson = scrapy.Field()

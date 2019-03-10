@@ -5,99 +5,101 @@
 # See documentation in:
 # https://doc.scrapy.org/en/latest/topics/spider-middleware.html
 
-from scrapy import signals
+import random
+import json
+from scrapy.exceptions import IgnoreRequest
+from scrapy.downloadermiddlewares.retry import RetryMiddleware
+
+from DuTracker.utils.log import log
+from DuTracker.db import *
 
 
-class DutrackerSpiderMiddleware(object):
-    # Not all methods need to be defined. If a method is not defined,
-    # scrapy acts as if the spider middleware does not modify the
-    # passed objects.
-
-    @classmethod
-    def from_crawler(cls, crawler):
-        # This method is used by Scrapy to create your spiders.
-        s = cls()
-        crawler.signals.connect(s.spider_opened, signal=signals.spider_opened)
-        return s
-
-    def process_spider_input(self, response, spider):
-        # Called for each response that goes through the spider
-        # middleware and into the spider.
-
-        # Should return None or raise an exception.
-        return None
-
-    def process_spider_output(self, response, result, spider):
-        # Called with the results returned from the Spider, after
-        # it has processed the response.
-
-        # Must return an iterable of Request, dict or Item objects.
-        for i in result:
-            yield i
-
-    def process_spider_exception(self, response, exception, spider):
-        # Called when a spider or process_spider_input() method
-        # (from other spider middleware) raises an exception.
-
-        # Should return either None or an iterable of Response, dict
-        # or Item objects.
-        pass
-
-    def process_start_requests(self, start_requests, spider):
-        # Called with the start requests of the spider, and works
-        # similarly to the process_spider_output() method, except
-        # that it doesn’t have a response associated.
-
-        # Must return only requests (not items).
-        for r in start_requests:
-            yield r
-
-    def spider_opened(self, spider):
-        spider.logger.info('Spider opened: %s' % spider.name)
+def checkJson(string):
+    try:
+        json.loads(string)
+    except  Exception as e:
+        return False
+    else:
+        return True
 
 
-class DutrackerDownloaderMiddleware(object):
-    # Not all methods need to be defined. If a method is not defined,
-    # scrapy acts as if the downloader middleware does not modify the
-    # passed objects.
+class RandomUserAgent(object):
+    def __init__(self, user_agent):
+        super(RandomUserAgent, self).__init__()
+        self.user_agent = user_agent
 
     @classmethod
     def from_crawler(cls, crawler):
-        # This method is used by Scrapy to create your spiders.
-        s = cls()
-        crawler.signals.connect(s.spider_opened, signal=signals.spider_opened)
-        return s
+        return cls(crawler.settings.get('RANDOM_USER_AGENT'))
 
     def process_request(self, request, spider):
-        # Called for each request that goes through the downloader
-        # middleware.
+        request.headers['User-Agent'] = random.choice(self.user_agent)
 
-        # Must either:
-        # - return None: continue processing this request
-        # - or return a Response object
-        # - or return a Request object
-        # - or raise IgnoreRequest: process_exception() methods of
-        #   installed downloader middleware will be called
-        return None
 
+class RandomProxy(object):
+    @classmethod
+    def from_crawler(cls, crawler):
+        settings = crawler.settings
+        return cls(settings.ge('PROXY_URL'))
+
+    def __init__(self, proxy):
+        self.proxy = proxy
+
+    def process_request(self, request, spider):
+        request.meta['proxy'] = self.proxy
+
+
+class RetryException(RetryMiddleware):
     def process_response(self, request, response, spider):
-        # Called with the response returned from the downloader.
-
-        # Must either;
-        # - return a Response object
-        # - return a Request object
-        # - or raise IgnoreRequest
+        if request.meta.get('dont_retry', False):
+            return response
+        data = response.body_as_unicode()
+        if not checkJson(data):
+            log.warn(f'返回Json格式错误无法解析 目标页面 {request.url} 返回数据 {response.body_as_unicode()} 开始重试')
+            return self._retry(request, 'Json Format Error', spider) or response
+        json_data = json.loads(data)
+        msg = json_data['msg']
+        status = json_data['status']
+        if status == 403:
+            log.warn(f'目标页面{request.url} 拒绝访问 提示信息 忽略请求')
+            return IgnoreRequest()
+        if status != 200:
+            log.warn(f'返回Json状态错误 目标页面 {request.url} 提示信息 {msg} 开始重试')
+            return self._retry(request, 'Json Status Error', spider) or response
         return response
 
     def process_exception(self, request, exception, spider):
-        # Called when a download handler or a process_request()
-        # (from other downloader middleware) raises an exception.
+        if isinstance(exception, self.EXCEPTIONS_TO_RETRY) \
+                and not request.meta.get('dont_retry', False):
+            return self._retry(request, exception, spider)
 
-        # Must either:
-        # - return None: continue processing this exception
-        # - return a Response object: stops process_exception() chain
-        # - return a Request object: stops process_exception() chain
-        pass
+    def _retry(self, request, reason, spider):
+        retries = request.meta.get('retry_times', 0) + 1
 
-    def spider_opened(self, spider):
-        spider.logger.info('Spider opened: %s' % spider.name)
+        retry_times = self.max_retry_times
+
+        if 'max_retry_times' in request.meta:
+            retry_times = request.meta['max_retry_times']
+
+        stats = spider.crawler.stats
+
+        if retries <= retry_times:
+            retryreq = request.copy()
+            retryreq.meta['retry_times'] = retries
+            retryreq.dont_filter = True
+            retryreq.priority = request.priority + self.priority_adjust
+
+
+            stats.inc_value('retry/count')
+            stats.inc_value('retry/reason_count/%s' % reason)
+            log.debug(f'第 [{retries}] 次重试请求 目标页面 {request.url} ')
+            return retryreq
+        else:
+            stats.inc_value('retry/max_reached')
+            log.error(f'重试请求达最大次数 目标页面 {request.url} 已放弃')
+            with db_session:
+                RetryUrl(
+                    url=request.url,
+                    reason=str(reason),
+                    callback=request.meta['callback']
+                )
