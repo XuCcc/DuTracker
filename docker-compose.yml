@@ -1,0 +1,21 @@
+version: '2'
+services:
+  proxy:
+    image: wildcat/scylla
+    ports:
+      - 8899:8899
+      - 8081:8081
+    volumes:
+      - ./volumes/scylla:/var/www/scylla
+  db:
+    image: influxdb
+    ports:
+      - 8086:8086
+    volumes:
+      - ./volumes/influxdb:/var/lib/influxdb
+  ui:
+    image: grafana/grafana
+    ports:
+      - 3000:3000
+    volumes:
+      - ./volumes/grafana:/var/lib/grafana
