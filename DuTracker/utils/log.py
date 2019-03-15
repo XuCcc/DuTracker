@@ -4,10 +4,9 @@
 # @Author  : Xu
 # @Site    : https://xuccc.github.io/
 
-
+import sys
 from click import style
 import logging
-from DuTracker import settings
 
 
 class ColorfulText(object):
@@ -67,12 +66,12 @@ class Logger(object):
 formatter = logging.Formatter('%(asctime)s: %(message)s')
 file_handler = logging.FileHandler('spider.log')
 file_handler.setFormatter(formatter)
-
-default_level = getattr(settings, 'LOG_LEVEL', 'DEBUG')
-level = getattr(logging, default_level)
+console_handler = logging.StreamHandler(sys.stdout)
+console_handler.setFormatter(formatter)
 
 _logger = logging.getLogger('spider')
-_logger.setLevel(level)
+_logger.setLevel(logging.INFO)
 _logger.addHandler(file_handler)
+_logger.addHandler(console_handler)
 
 log = Logger(_logger)

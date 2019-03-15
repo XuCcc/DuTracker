@@ -9,10 +9,6 @@
 #     https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://doc.scrapy.org/en/latest/topics/spider-middleware.html
 
-import logging
-
-logging.getLogger('scrapy').propagate = False
-
 BOT_NAME = 'DuTracker'
 
 SPIDER_MODULES = ['DuTracker.spiders']
@@ -20,15 +16,16 @@ NEWSPIDER_MODULE = 'DuTracker.spiders'
 
 ROBOTSTXT_OBEY = False
 
-LOG_FORMAT = '%(asctime)s: %(message)s'
+LOG_ENABLED = False
 
 DOWNLOADER_MIDDLEWARES = {
     'scrapy.downloadermiddleware.useragent.UserAgentMiddleware': None,
     'DuTracker.middlewares.RandomUserAgent': 500,
     'DuTracker.middlewares.RetryException': 551,
-    'DuTracker.middlewares.RandomProxy': 760
+    # 'DuTracker.middlewares.RandomProxy': 760
 }
-PROXY_URL = 'http://127.0.0.1:8081'
+
+# PROXY_URL = 'http://127.0.0.1:8081'
 
 RANDOM_USER_AGENT = [
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.75.14 (KHTML, like Gecko) Version/7.0.3 Safari/7046A194A",
@@ -132,3 +129,10 @@ RANDOM_USER_AGENT = [
     "Mozilla/5.0 (Windows; U; Windows NT 6.1; es-ES) AppleWebKit/531.22.7 (KHTML, like Gecko) Version/4.0.5 Safari/531.22.7",
     "Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US) AppleWebKit/533.18.1 (KHTML, like Gecko) Version/4.0.5 Safari/531.22.7"
 ]
+
+
+INFLUXDB_HOST = '127.0.0.1'
+INFLUXDB_PORT = 8086
+INFLUXDB_USER = 'root'
+INFLUXDB_PASSWORD = 'root'
+FLUXDB_DATABASE = 'duApp'

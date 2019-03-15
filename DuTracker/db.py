@@ -27,7 +27,6 @@ class Product(db.Entity):
     json = Optional(Json)
     datetime = Optional(str, default=arrow.now().format('YYYY-MM-DD HH:mm:ss'))
     brand = Optional('Brand')
-    series = Optional('Series')
     imageAndText = Optional(str)
 
 class Brand(db.Entity):
@@ -37,16 +36,13 @@ class Brand(db.Entity):
     products = Set(Product)
 
 
-class Series(db.Entity):
-    id = PrimaryKey(int, auto=True)
-    name = Required(str)
-    coverUrl = Required(str)
-    products = Set(Product)
-
-
 class RetryUrl(db.Entity):
     id = PrimaryKey(int, auto=True)
     url = Optional(str)
     reason = Optional(str)
     datetime = Optional(str, default=arrow.now().format('YYYY-MM-DD HH:mm:ss'))
     callback = Optional(str)
+
+
+db.bind(provider='sqlite', filename='../product.sqlite', create_db=True)
+db.generate_mapping(create_tables=True)
