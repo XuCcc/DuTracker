@@ -117,3 +117,6 @@ dmypy.json
 
 # Pycharm
 .idea/
+
+# Database
+*.sqlite
