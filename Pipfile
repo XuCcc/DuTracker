@@ -11,6 +11,8 @@ pony = "*"
 arrow = "*"
 click = "*"
 "js2py" = "*"
+apscheduler = "*"
+influxdb = "*"
 
 [requires]
 python_version = "3.6"
