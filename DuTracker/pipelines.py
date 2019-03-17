@@ -99,7 +99,7 @@ class SavePriceItem(object):
         points = gen_points(brandId, pid, title, size, formatSize, price)
         result = influxdb.write_points(points)
         if result:
-            log.success(f'商品:{title} 编号：{pid} 尺码: {size} 价格: {price}')
+            log.debug(f'商品:{title} 编号：{pid} 尺码: {size} 价格: {price}')
         else:
             log.fail(f'写入数据库失败 | 商品:{title} 编号：{pid} 尺码: {size} 价格: {price}')
         return item
