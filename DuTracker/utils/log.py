@@ -7,7 +7,7 @@
 import sys
 from click import style
 import logging
-
+import traceback
 
 class ColorfulText(object):
     """Colorful text"""
@@ -75,3 +75,20 @@ _logger.addHandler(file_handler)
 _logger.addHandler(console_handler)
 
 log = Logger(_logger)
+
+def job_listener(event):
+    if event.exception:
+        log.fail('爬虫任务启动失败')
+    else:
+        log.success('爬虫启动')
+
+def handle_parse_exception(func):
+    def wrapper(spider,response):
+        try:
+            for result in func(spider,response):
+                yield result
+        except Exception as e:
+            log.fail(f'目标页面 {response.url} 解析失败 {e.__class__.__name__}:{e}')
+            log.debug(f'错误上下文 {traceback.format_exc()}')
+            yield next(spider.start_requests())
+    return wrapper

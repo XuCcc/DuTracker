@@ -10,6 +10,8 @@ from DuTracker.db import *
 from DuTracker.utils.log import log
 from DuTracker.tsdb import influxdb, gen_points
 
+import traceback
+
 
 class SaveBrandItem():
     @db_session
@@ -92,14 +94,20 @@ class SavePriceItem(object):
     def process_item(self, item, spider):
         pid = item.get('id')
         brandId = item.get('brandId')
+        btitle = item.get('btitle')
         title = item.get('title')
         size = item.get('size')
         formatSize = item.get('formatSize')
         price = item.get('price')
-        points = gen_points(brandId, pid, title, size, formatSize, price)
-        result = influxdb.write_points(points)
-        if result:
-            log.debug(f'商品:{title} 编号：{pid} 尺码: {size} 价格: {price}')
+        points = gen_points(brandId, btitle, pid, title, size, formatSize, price)
+        try:
+            result = influxdb.write_points(points)
+        except  Exception as e:
+            log.fail(f'写入数据库失败({e.__class__.__name__}) 商品:{title} 编号：{pid} 尺码: {size} 价格: {price}')
+            log.debug(traceback.format_exc())
         else:
-            log.fail(f'写入数据库失败 | 商品:{title} 编号：{pid} 尺码: {size} 价格: {price}')
+            if result:
+                log.debug(f'商品:{title} 编号：{pid} 尺码: {size} 价格: {price}')
+            else:
+                log.fail(f'写入数据库失败 商品:{title} 编号：{pid} 尺码: {size} 价格: {price}')
         return item

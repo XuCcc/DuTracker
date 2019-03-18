@@ -18,12 +18,13 @@ _database = _settings.get('FLUXDB_DATABASE')
 influxdb = InfluxDBClient(_host, _port, _username, _password, _database)
 
 
-def gen_points(brandId, productId, title, size, formatSize, price):
+def gen_points(brandId, btitle, productId, title, size, formatSize, price):
     return [{
         'measurement': f"branId_{brandId}",
         'tags': {
             'productId': productId,
             'title': title,
+            'brand': btitle,
             'size': size,
             'formatSize': formatSize,
         },
