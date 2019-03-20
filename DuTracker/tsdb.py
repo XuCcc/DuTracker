@@ -20,7 +20,7 @@ influxdb = InfluxDBClient(_host, _port, _username, _password, _database)
 
 def gen_points(brandId, btitle, productId, title, size, formatSize, price, soldNum):
     return [{
-        'measurement': f"branId_{brandId}",
+        'measurement': f"brandId_{brandId}",
         'tags': {
             'productId': productId,
             'title': title,
