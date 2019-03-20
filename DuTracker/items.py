@@ -40,3 +40,4 @@ class PriceItem(scrapy.Item):
     size = scrapy.Field()
     formatSize = scrapy.Field()
     price = scrapy.Field()
+    soldNum=scrapy.Field()

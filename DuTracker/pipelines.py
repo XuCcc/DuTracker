@@ -99,7 +99,8 @@ class SavePriceItem(object):
         size = item.get('size')
         formatSize = item.get('formatSize')
         price = item.get('price')
-        points = gen_points(brandId, btitle, pid, title, size, formatSize, price)
+        soldNum = item.get('soldNum')
+        points = gen_points(brandId, btitle, pid, title, size, formatSize, price, soldNum)
         try:
             result = influxdb.write_points(points)
         except  Exception as e:
