@@ -92,16 +92,16 @@ def start(verbose, debug, proxy, min, brand, serie):
 
     process = CrawlerProcess(settings)
     sched = TwistedScheduler()
-    sched.add_job(process.crawl, 'interval', args=[TrackerSpider], kwargs={'soldNum_min': min}, minutes=1)
+    sched.add_job(process.crawl, 'interval', args=[TrackerSpider], kwargs={'soldNum_min': min}, hours=6)
     # sched.add_job(process.crawl, 'interval', args=[TrackerSpider], kwargs={'soldNum_min': min}, seconds=30)
     process.crawl(TrackerSpider, soldNum=min)
 
-    sched.add_job(sched.print_jobs, 'interval', minutes=1)
+    sched.add_job(sched.print_jobs, 'interval', hours=6)
 
     if brand:
-        sched.add_job(process.crawl, 'interval', args=[BrandSpider], kwargs={'auto': True, 'Ids': brand}, hours=3)
+        sched.add_job(process.crawl, 'interval', args=[BrandSpider], kwargs={'auto': True, 'Ids': brand}, days=1)
     if serie:
-        sched.add_job(process.crawl, 'interval', args=[SerieSpider], kwargs={'auto': True, 'Ids': serie}, hours=3)
+        sched.add_job(process.crawl, 'interval', args=[SerieSpider], kwargs={'auto': True, 'Ids': serie}, days=1)
 
     log.info('开始商品价格追踪')
     sched.start()
