@@ -13,20 +13,22 @@ from DuTracker.tsdb import influxdb, gen_points
 import traceback
 
 
-class SaveBrandItem():
+class SaveProductId():
     @db_session
     def process_item(self, item, spider):
-        bid = item.get('id')
+        pid = item.get('id')
+        title = item.get('title')
         name = item.get('name')
-        logo = item.get('logo')
-        if not Brand.exists(id=bid):
-            Brand(id=bid, name=name, logo=logo)
-            log.success(f'品牌：{name} 编号：{bid}')
+        if Product.exists(id=pid):
+            p = Product[pid]
         else:
-            b = Brand[bid]
-            b.name = name
-            b.logo = logo
-            log.info(f'品牌：{name} 编号：{bid}')
+            p = Product(id=pid)
+        p.title = title
+        if spider.name == 'brand':
+            p.brand = name
+        elif spider.name == 'serie':
+            p.serie = name
+        log.success(f'商品：{title} 编号：{pid}')
         return item
 
 
@@ -39,76 +41,52 @@ class SaveProductItem():
         url = item.get('url')
         soldNum = item.get('soldNum')
         logo = item.get('logo')
-        brandId = item.get('brandId')
         categoryId = item.get('categoryId')
         images = item.get('images')
         sellDate = item.get('sellDate')
-        articleNumber = articleNumber
         authPrice = item.get('authPrice')
         goodsId = item.get('goodsId')
         sizeList = item.get('sizeList')
         imageAndText = item.get('imageAndText')
         detailJson = item.get('detailJson')
         if not Product.exists(id=pid):
-            Product(
-                id=pid,
-                url=url,
-                title=title,
-                soldNum=soldNum,
-                logo=logo,
-                brandId=brandId,
-                categoryId=categoryId,
-                images=images,
-                sellDate=sellDate,
-                articleNumber=articleNumber,
-                authPrice=authPrice,
-                goodsId=goodsId,
-                sizeList=sizeList,
-                imageAndText=imageAndText,
-                json=detailJson,
-                brand=Brand[item.get('brandId')]
-            )
-            log.success(f'商品:{title} 编号：{pid} 货号：{articleNumber} 售出量: {soldNum}')
+            p = Product(id=pid)
         else:
             p = Product[pid]
-            p.url = url
-            p.title = title
-            p.soldNum = soldNum
-            p.logo = logo
-            p.brandId = brandId
-            p.categoryId = categoryId
-            p.images = images
-            p.sellDate = sellDate
-            p.articleNumber = articleNumber
-            p.authPrice = authPrice
-            p.goodsId = goodsId
-            p.sizeList = sizeList
-            p.imageAndText = imageAndText
-            p.json = detailJson
-            p.brand = Brand[item.get('brandId')]
-            log.info(f'商品:{title} 编号：{pid} 货号：{articleNumber} 售出量: {soldNum}')
+        p.url = url
+        p.title = title
+        p.soldNum = soldNum
+        p.logo = logo
+        p.categoryId = categoryId
+        p.images = images
+        p.sellDate = sellDate
+        p.articleNumber = articleNumber
+        p.authPrice = authPrice
+        p.goodsId = goodsId
+        p.sizeList = sizeList
+        p.imageAndText = imageAndText
+        p.json = detailJson
+        log.success(f'商品:{title} 编号：{pid} 发售日期：{sellDate} 售出量: {soldNum} ')
         return item
 
 
 class SavePriceItem(object):
     def process_item(self, item, spider):
         pid = item.get('id')
-        brandId = item.get('brandId')
-        btitle = item.get('btitle')
+        brand = item.get('brand')
+        serie = item.get('serie')
         title = item.get('title')
         size = item.get('size')
         formatSize = item.get('formatSize')
         price = item.get('price')
         soldNum = item.get('soldNum')
-        points = gen_points(brandId, btitle, pid, title, size, formatSize, price, soldNum)
+        points = gen_points(brand, serie, pid, title, size, formatSize, price, soldNum)
         try:
             result = influxdb.write_points(points)
-        except  Exception as e:
+        except Exception as e:
             log.fail(f'写入数据库失败({e.__class__.__name__}) 商品:{title} 编号：{pid} 尺码: {size} 价格: {price}')
             log.debug(traceback.format_exc())
         else:
-            if result:
-                log.debug(f'商品:{title} 编号：{pid} 尺码: {size} 价格: {price}')
-            else:
+            if not result:
                 log.fail(f'写入数据库失败 商品:{title} 编号：{pid} 尺码: {size} 价格: {price}')
         return item

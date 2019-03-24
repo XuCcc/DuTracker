@@ -8,10 +8,10 @@
 import scrapy
 
 
-class BrandItem(scrapy.Item):
+class ProductInfo(scrapy.Item):
     id = scrapy.Field()
+    title = scrapy.Field()
     name = scrapy.Field()
-    logo = scrapy.Field()
 
 
 class ProductItem(scrapy.Item):
@@ -34,10 +34,10 @@ class ProductItem(scrapy.Item):
 
 class PriceItem(scrapy.Item):
     id = scrapy.Field()
-    brandId = scrapy.Field()
-    btitle = scrapy.Field()
+    brand = scrapy.Field()
+    serie = scrapy.Field()
     title = scrapy.Field()
     size = scrapy.Field()
     formatSize = scrapy.Field()
     price = scrapy.Field()
-    soldNum=scrapy.Field()
+    soldNum = scrapy.Field()

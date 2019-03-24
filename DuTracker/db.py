@@ -12,11 +12,10 @@ db = Database()
 
 class Product(db.Entity):
     id = PrimaryKey(int, auto=True)
-    url = Required(str)
+    url = Optional(str)
     title = Optional(str)
     soldNum = Optional(int)
     logo = Optional(str)
-    brandId = Optional(int)
     categoryId = Optional(int)
     images = Optional(StrArray)
     sellDate = Optional(str)
@@ -26,22 +25,9 @@ class Product(db.Entity):
     sizeList = Optional(StrArray)
     json = Optional(Json)
     datetime = Optional(str, default=arrow.now().format('YYYY-MM-DD HH:mm:ss'))
-    brand = Optional('Brand')
+    brand = Optional(str)
+    serie = Optional(str)
     imageAndText = Optional(str)
-
-class Brand(db.Entity):
-    id = PrimaryKey(int, auto=True)
-    name = Required(str)
-    logo = Required(str)
-    products = Set(Product)
-
-
-class RetryUrl(db.Entity):
-    id = PrimaryKey(int, auto=True)
-    url = Optional(str)
-    reason = Optional(str)
-    datetime = Optional(str, default=arrow.now().format('YYYY-MM-DD HH:mm:ss'))
-    callback = Optional(str)
 
 
 db.bind(provider='sqlite', filename='../product.sqlite', create_db=True)
