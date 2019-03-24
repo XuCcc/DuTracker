@@ -94,7 +94,7 @@ def start(verbose, debug, proxy, min, brand, serie):
     sched = TwistedScheduler()
     sched.add_job(process.crawl, 'interval', args=[TrackerSpider], kwargs={'soldNum_min': min}, hours=6)
     # sched.add_job(process.crawl, 'interval', args=[TrackerSpider], kwargs={'soldNum_min': min}, seconds=30)
-    process.crawl(TrackerSpider, soldNum=min)
+    process.crawl(TrackerSpider, soldNum_min=min)
 
     sched.add_job(sched.print_jobs, 'interval', hours=6)
 
