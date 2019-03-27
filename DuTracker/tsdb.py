@@ -19,13 +19,7 @@ _password = _settings.get('INFLUXDB_PASSWORD', 'root')
 _database = _settings.get('FLUXDB_DATABASE')
 
 influxdb = InfluxDBClient(_host, _port, _username, _password, _database)
-try:
-    influxdb.ping()
-except  Exception as e:
-    log.error(f'InfluxDB 连接错误')
-    sys.exit(1)
-else:
-    log.success(f'InfluxDB 连接成功')
+
 
 
 def gen_points(brand, serie, productId, title, size, formatSize, price, soldNum):

@@ -26,9 +26,9 @@ def cli():
 
 @cli.command()
 @click.option('--verbose', '-v', is_flag=True, default=False, )
-@click.option('--debug', is_flag=True, default=False)
-@click.option('--proxy', )
-def initdb(verbose, debug, proxy, ):
+@click.option('--debug', is_flag=True, default=False,help='show scrapy log')
+@click.option('--proxy', help='proxy url')
+def crawl(verbose, debug, proxy, ):
     settings = get_project_settings()
 
     if verbose:
@@ -58,7 +58,7 @@ def initdb(verbose, debug, proxy, ):
 @cli.command()
 @click.argument('pid', type=int, nargs=-1)
 @click.option('--verbose', '-v', is_flag=True, default=False, )
-@click.option('--debug', is_flag=True, default=False)
+@click.option('--debug', is_flag=True, default=False,help='show scrapy log')
 def addproduct(pid, debug, verbose):
     settings = get_project_settings()
 
@@ -72,13 +72,25 @@ def addproduct(pid, debug, verbose):
 
 @cli.command()
 @click.option('--verbose', '-v', is_flag=True, default=False, )
-@click.option('--debug', is_flag=True, default=False)
-@click.option('--proxy', )
+@click.option('--debug', is_flag=True, default=False,help='show scrapy log')
+@click.option('--proxy', help='proxy url')
 # @click.option('--day', type=int, default=1)
 @click.option('--min', type=int, default=1000)
-@click.option('--brand', '-b', type=int, multiple=True)
-@click.option('--serie', '-s', type=int, multiple=True)
+@click.option('--brand', '-b', type=int, multiple=True,help='brand ids')
+@click.option('--serie', '-s', type=int, multiple=True,help='serie ids')
 def start(verbose, debug, proxy, min, brand, serie):
+    def check():
+        from DuTracker.tsdb import influxdb
+        try:
+            influxdb.ping()
+        except  Exception as e:
+            log.error(f'InfluxDB 连接错误')
+            sys.exit(1)
+        else:
+            log.success(f'InfluxDB 连接成功')
+
+    check()
+
     # https://stackoverflow.com/questions/44228851/scrapy-on-a-schedule
     settings = get_project_settings()
 

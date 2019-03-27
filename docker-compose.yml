@@ -1,12 +1,12 @@
 version: '2'
 services:
-  proxy:
-    image: wildcat/scylla
-    ports:
-      - 8899:8899
-      - 8081:8081
-    volumes:
-      - ./volumes/scylla:/var/www/scylla
+#  proxy:
+#    image: wildcat/scylla
+#    ports:
+#      - 8899:8899
+#      - 8081:8081
+#    volumes:
+#      - ./volumes/scylla:/var/www/scylla
   db:
     image: docker.io/influxdb:latest
     ports:
