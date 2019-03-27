@@ -16,7 +16,7 @@
 - 导入需要追踪的商品ID
     - 导入指定商品ID  `python dt.py addproduct 1 2 3`
     - 导入指定品牌、系列所有附属商品 
-        - [更新 `DuTracker/utils/urls.py`信息](###URL更新方式)
+        - [更新 `DuTracker/utils/urls.py`信息](#url更新方式)
         - `python dt.py crawl`
 - 追踪商品价格趋势
     - `python dt.py start -v`
