@@ -86,6 +86,6 @@ def handle_parse_exception(func):
             log.fail(
                 f'[Spider:{spider.name}->Function:{func.__name__}] {response.url} {e.__class__.__name__}:{e}')
             log.debug(f'{traceback.format_exc()}')
-            yield next(spider.start_requests())
+            yield next(func(spider,response))
 
     return wrapper
