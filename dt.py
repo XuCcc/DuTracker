@@ -26,7 +26,7 @@ def cli():
 
 @cli.command()
 @click.option('--verbose', '-v', is_flag=True, default=False, )
-@click.option('--debug', is_flag=True, default=False,help='show scrapy log')
+@click.option('--debug', is_flag=True, default=False, help='show scrapy log')
 @click.option('--proxy', help='proxy url')
 def crawl(verbose, debug, proxy, ):
     settings = get_project_settings()
@@ -58,7 +58,7 @@ def crawl(verbose, debug, proxy, ):
 @cli.command()
 @click.argument('pid', type=int, nargs=-1)
 @click.option('--verbose', '-v', is_flag=True, default=False, )
-@click.option('--debug', is_flag=True, default=False,help='show scrapy log')
+@click.option('--debug', is_flag=True, default=False, help='show scrapy log')
 def addproduct(pid, debug, verbose):
     settings = get_project_settings()
 
@@ -72,13 +72,14 @@ def addproduct(pid, debug, verbose):
 
 @cli.command()
 @click.option('--verbose', '-v', is_flag=True, default=False, )
-@click.option('--debug', is_flag=True, default=False,help='show scrapy log')
+@click.option('--debug', is_flag=True, default=False, help='show scrapy log')
 @click.option('--proxy', help='proxy url')
 # @click.option('--day', type=int, default=1)
 @click.option('--min', type=int, default=1000)
-@click.option('--brand', '-b', type=int, multiple=True,help='brand ids')
-@click.option('--serie', '-s', type=int, multiple=True,help='serie ids')
-def start(verbose, debug, proxy, min, brand, serie):
+@click.option('--product', '-p', multiple=True, type=int, help='product ids')
+@click.option('--brand', '-b', multiple=True, help='brand ids')
+@click.option('--serie', '-s', multiple=True, help='serie ids')
+def start(verbose, debug, proxy, min, product, brand, serie):
     def check():
         from DuTracker.tsdb import influxdb
         try:
@@ -104,9 +105,9 @@ def start(verbose, debug, proxy, min, brand, serie):
 
     process = CrawlerProcess(settings)
     sched = TwistedScheduler()
-    sched.add_job(process.crawl, 'interval', args=[TrackerSpider], kwargs={'soldNum_min': min}, hours=6)
+    sched.add_job(process.crawl, 'interval', args=[TrackerSpider], kwargs={'soldNum_min': min, 'Ids': product}, hours=6)
     # sched.add_job(process.crawl, 'interval', args=[TrackerSpider], kwargs={'soldNum_min': min}, seconds=30)
-    process.crawl(TrackerSpider, soldNum_min=min)
+    process.crawl(TrackerSpider, soldNum_min=min, Ids=product)
 
     sched.add_job(sched.print_jobs, 'interval', hours=6)
 

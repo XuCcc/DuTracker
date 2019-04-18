@@ -18,11 +18,22 @@ class TrackerSpider(scrapy.Spider):
     }
 
     soldNum_min = 50
+    Ids = []
 
     @db_session
     def start_requests(self):
         log.info(f'选取商品销量高于 {self.soldNum_min} 开始追踪')
+        pools = []
         for p in Product.select(lambda p: p.soldNum > self.soldNum_min).order_by(desc(Product.soldNum)):
+            pools.append(p)
+        for pid in self.Ids:
+            if Product.exists(id=pid):
+                pools.append(pid)
+            else:
+                log.fail(f'商品编号:{pid} 不存在数据库')
+
+        for pid in pools:
+            p = Product[pid]
             yield scrapy.Request(p.url, meta={
                 'productId': p.id,
                 'title': p.title,
@@ -56,7 +67,7 @@ class TrackerSpider(scrapy.Spider):
                 continue
             yield PriceItem(
                 id=pid,
-                brand = brand,
+                brand=brand,
                 serie=serie,
                 title=title,
                 size=item['size'],
