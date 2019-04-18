@@ -51,9 +51,8 @@ class SerieSpider(scrapy.Spider):
         else:
             ids = self.Ids
 
-        log.info(f'获取 {",".join(ids)} 系列包含商品')
+        log.info(f'获取 {ids} 系列包含商品')
         for unionId in ids:
-            unionId = int(unionId)
             yield Request(page_url(unionId), callback=self.parse_serieInfo, meta={
                 'unionId': unionId,
                 'name': self.serieIds[unionId]

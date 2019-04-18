@@ -77,8 +77,8 @@ def addproduct(pid, debug, verbose):
 # @click.option('--day', type=int, default=1)
 @click.option('--min', type=int, default=1000)
 @click.option('--product', '-p', multiple=True, type=int, help='product ids')
-@click.option('--brand', '-b', multiple=True, help='brand ids')
-@click.option('--serie', '-s', multiple=True, help='serie ids')
+@click.option('--brand', '-b', multiple=True, type=int, help='brand ids')
+@click.option('--serie', '-s', multiple=True, type=int, help='serie ids')
 def start(verbose, debug, proxy, min, product, brand, serie):
     def check():
         from DuTracker.tsdb import influxdb
@@ -115,11 +115,12 @@ def start(verbose, debug, proxy, min, product, brand, serie):
         sched.add_job(process.crawl, 'interval', args=[BrandSpider], kwargs={'auto': True, 'Ids': brand}, days=1)
     if serie:
         sched.add_job(process.crawl, 'interval', args=[SerieSpider], kwargs={'auto': True, 'Ids': serie}, days=1)
+    if brand or serie:
+        sched.add_job(process.crawl, 'interval', args=[ProductSpider], kwargs={'fromDB': True}, days=1)
 
     log.info('开始商品价格追踪')
     sched.start()
     process.start(False)
-
 
 if __name__ == '__main__':
     cli()

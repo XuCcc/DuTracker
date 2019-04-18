@@ -53,9 +53,8 @@ class BrandSpider(scrapy.Spider):
         else:
             ids = self.Ids
 
-        log.info(f'获取 {",".join(ids)} 品牌包含商品')
+        log.info(f'获取 {ids} 品牌包含商品')
         for unionId in ids:
-            unionId = int(unionId)
             yield Request(page_url(unionId), callback=self.parse_brandInfo, meta={
                 'unionId': unionId,
                 'name': self.brandIds[unionId]
