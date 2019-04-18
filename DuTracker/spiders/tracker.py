@@ -28,12 +28,11 @@ class TrackerSpider(scrapy.Spider):
             pools.append(p)
         for pid in self.Ids:
             if Product.exists(id=pid):
-                pools.append(pid)
+                pools.append(Product[pid])
             else:
                 log.fail(f'商品编号:{pid} 不存在数据库')
 
-        for pid in pools:
-            p = Product[pid]
+        for p in pools:
             yield scrapy.Request(p.url, meta={
                 'productId': p.id,
                 'title': p.title,
