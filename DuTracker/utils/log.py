@@ -7,6 +7,7 @@
 import sys
 from click import style
 import logging
+from logging.handlers import RotatingFileHandler
 import traceback
 
 class ColorfulText(object):
@@ -64,7 +65,7 @@ class Logger(object):
 
 
 formatter = logging.Formatter('%(asctime)s: %(message)s')
-file_handler = logging.FileHandler('spider.log')
+file_handler = RotatingFileHandler('spider.log',maxBytes=5*1024*1024,backupCount=3)
 file_handler.setFormatter(formatter)
 console_handler = logging.StreamHandler(sys.stdout)
 console_handler.setFormatter(formatter)

@@ -50,6 +50,8 @@ class SerieSpider(scrapy.Spider):
             if ids == ['']: return IgnoreRequest()
         else:
             ids = self.Ids
+            if not ids: return IgnoreRequest()
+
 
         log.info(f'获取 {ids} 系列包含商品')
         for unionId in ids:
