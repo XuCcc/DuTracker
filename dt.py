@@ -96,7 +96,8 @@ def addproduct(pid, debug, verbose):
 @click.option('--brand', '-b', multiple=True, type=int, help='brand ids')
 @click.option('--serie', '-s', multiple=True, type=int, help='serie ids')
 @click.option('--check/--no-check', default=True)
-def start(verbose, debug, proxy, min, product, brand, serie, check):
+@click.option('--delay', type=float, help='delay between download')
+def start(verbose, debug, proxy, min, product, brand, serie, check, delay):
     def check_db():
         from DuTracker.tsdb import influxdb
         try:
@@ -119,6 +120,7 @@ def start(verbose, debug, proxy, min, product, brand, serie, check):
         })
         settings['PROXY_URL'] = proxy
     if debug: settings['LOG_ENABLED'] = True
+    if delay: settings['DOWNLOAD_DELAY'] = delay
 
     process = CrawlerProcess(settings)
     sched = TwistedScheduler()
