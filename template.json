@@ -16,7 +16,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": 1,
-  "iteration": 1553659709086,
+  "iteration": 1560181131454,
   "links": [],
   "panels": [
     {
@@ -28,7 +28,7 @@
       "datasource": "InfluxDB",
       "fill": 1,
       "gridPos": {
-        "h": 13,
+        "h": 11,
         "w": 24,
         "x": 0,
         "y": 0
@@ -52,7 +52,7 @@
       "paceLength": 10,
       "percentage": false,
       "pointradius": 2,
-      "points": true,
+      "points": false,
       "renderer": "flot",
       "seriesOverrides": [],
       "stack": false,
@@ -161,7 +161,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "PriceHistory",
+      "title": "$title 价格走势",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -201,32 +201,35 @@
     },
     {
       "aliasColors": {},
-      "bars": false,
+      "bars": true,
       "cacheTimeout": null,
       "dashLength": 10,
       "dashes": false,
       "description": "",
       "fill": 1,
       "gridPos": {
-        "h": 9,
-        "w": 11,
+        "h": 10,
+        "w": 24,
         "x": 0,
-        "y": 13
+        "y": 11
       },
       "id": 4,
       "legend": {
-        "avg": false,
+        "alignAsTable": true,
+        "avg": true,
         "current": false,
-        "max": false,
-        "min": false,
+        "hideEmpty": false,
+        "max": true,
+        "min": true,
+        "rightSide": false,
         "show": true,
-        "total": false,
-        "values": false
+        "total": true,
+        "values": true
       },
-      "lines": true,
+      "lines": false,
       "linewidth": 1,
       "links": [],
-      "nullPointMode": "connected",
+      "nullPointMode": "null",
       "paceLength": 10,
       "percentage": false,
       "pointradius": 2,
@@ -268,6 +271,10 @@
               {
                 "params": [],
                 "type": "mean"
+              },
+              {
+                "params": [],
+                "type": "difference"
               }
             ]
           ],
@@ -290,7 +297,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "$title 销量",
+      "title": "$title 每日销量",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -338,8 +345,8 @@
         "allValue": null,
         "current": {
           "tags": [],
-          "text": "2016款现货-adidas Yeezy Boost 350 V2 Zebra 白斑马",
-          "value": "2016款现货-adidas Yeezy Boost 350 V2 Zebra 白斑马"
+          "text": "Converse Chuck Taylor All Star 1970s High Navy 海军蓝",
+          "value": "Converse Chuck Taylor All Star 1970s High Navy 海军蓝"
         },
         "datasource": "InfluxDB",
         "definition": "SHOW TAG VALUES WITH KEY = \"title\"",
@@ -363,8 +370,9 @@
       {
         "allValue": null,
         "current": {
-          "text": "41",
-          "value": "41"
+          "tags": [],
+          "text": "43",
+          "value": "43"
         },
         "datasource": "InfluxDB",
         "definition": "SHOW TAG VALUES WITH KEY = \"size\"  WHERE title =~ /$title/",
@@ -388,7 +396,7 @@
     ]
   },
   "time": {
-    "from": "now-2d",
+    "from": "now-90d",
     "to": "now"
   },
   "timepicker": {
@@ -419,5 +427,5 @@
   "timezone": "",
   "title": "DuTracker",
   "uid": "VEnmhNqmk",
-  "version": 8
+  "version": 14
 }
