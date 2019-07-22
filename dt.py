@@ -40,7 +40,7 @@ def show():
     reactor.run()
 
 
-@cli.command()
+@cli.command(help='Init Database')
 @click.option('--verbose', '-v', is_flag=True, default=False, )
 @click.option('--debug', is_flag=True, default=False, help='show scrapy log')
 @click.option('--proxy', help='proxy url')
@@ -71,7 +71,7 @@ def crawl(verbose, debug, proxy, ):
     reactor.run()
 
 
-@cli.command()
+@cli.command(help='add product information by productId')
 @click.argument('pid', type=int, nargs=-1)
 @click.option('--verbose', '-v', is_flag=True, default=False, )
 @click.option('--debug', is_flag=True, default=False, help='show scrapy log')
@@ -86,7 +86,7 @@ def addproduct(pid, debug, verbose):
     process.start()
 
 
-@cli.command()
+@cli.command(help='Monitor products\' price')
 @click.option('--verbose', '-v', is_flag=True, default=False, )
 @click.option('--debug', is_flag=True, default=False, help='show scrapy log')
 @click.option('--proxy', help='proxy url')
@@ -97,7 +97,9 @@ def addproduct(pid, debug, verbose):
 @click.option('--serie', '-s', multiple=True, type=int, help='serie ids')
 @click.option('--check/--no-check', default=True)
 @click.option('--delay', type=float, help='delay between download')
-def start(verbose, debug, proxy, min, product, brand, serie, check, delay):
+@click.option('--news', is_flag=True, default=False)
+@click.option('--days', type=int, default=14,help='save log by days')
+def start(verbose, debug, proxy, min, product, brand, serie, check, delay, news, days):
     def check_db():
         from DuTracker.tsdb import influxdb
         try:
@@ -137,6 +139,10 @@ def start(verbose, debug, proxy, min, product, brand, serie, check, delay):
     process.crawl(TrackerSpider, soldNum_min=min, Ids=product)
 
     sched.add_job(process.crawl, 'interval', args=[TrackerSpider], kwargs={'soldNum_min': min, 'Ids': product}, hours=6)
+    if news:
+        sched.add_job(process.crawl, 'interval', args=[TrackerSpider], kwargs={'newItem': True, 'days': days},
+                      hours=1)
+
     sched.add_job(sched.print_jobs, 'interval', hours=6)
 
     log.info('开始商品价格追踪')
