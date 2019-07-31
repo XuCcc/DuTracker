@@ -25,6 +25,22 @@ def cli():
 
 
 @cli.command()
+def show():
+    settings = get_project_settings()
+    log.info('显示远程品牌&系列信息')
+    runner = CrawlerRunner(settings)
+
+    @defer.inlineCallbacks
+    def crawl():
+        yield runner.crawl(BrandSpider, auto=True)
+        yield runner.crawl(SerieSpider, auto=True)
+        reactor.stop()
+
+    crawl()
+    reactor.run()
+
+
+@cli.command(help='Init Database')
 @click.option('--verbose', '-v', is_flag=True, default=False, )
 @click.option('--debug', is_flag=True, default=False, help='show scrapy log')
 @click.option('--proxy', help='proxy url')
@@ -55,7 +71,7 @@ def crawl(verbose, debug, proxy, ):
     reactor.run()
 
 
-@cli.command()
+@cli.command(help='add product information by productId')
 @click.argument('pid', type=int, nargs=-1)
 @click.option('--verbose', '-v', is_flag=True, default=False, )
 @click.option('--debug', is_flag=True, default=False, help='show scrapy log')
@@ -70,7 +86,7 @@ def addproduct(pid, debug, verbose):
     process.start()
 
 
-@cli.command()
+@cli.command(help='Monitor products\' price')
 @click.option('--verbose', '-v', is_flag=True, default=False, )
 @click.option('--debug', is_flag=True, default=False, help='show scrapy log')
 @click.option('--proxy', help='proxy url')
@@ -79,8 +95,12 @@ def addproduct(pid, debug, verbose):
 @click.option('--product', '-p', multiple=True, type=int, help='product ids')
 @click.option('--brand', '-b', multiple=True, type=int, help='brand ids')
 @click.option('--serie', '-s', multiple=True, type=int, help='serie ids')
-def start(verbose, debug, proxy, min, product, brand, serie):
-    def check():
+@click.option('--check/--no-check', default=True)
+@click.option('--delay', type=float, help='delay between download')
+@click.option('--news', is_flag=True, default=False)
+@click.option('--days', type=int, default=14,help='save log by days')
+def start(verbose, debug, proxy, min, product, brand, serie, check, delay, news, days):
+    def check_db():
         from DuTracker.tsdb import influxdb
         try:
             influxdb.ping()
@@ -90,7 +110,7 @@ def start(verbose, debug, proxy, min, product, brand, serie):
         else:
             log.success(f'InfluxDB 连接成功')
 
-    check()
+    if check: check_db()
 
     # https://stackoverflow.com/questions/44228851/scrapy-on-a-schedule
     settings = get_project_settings()
@@ -102,25 +122,33 @@ def start(verbose, debug, proxy, min, product, brand, serie):
         })
         settings['PROXY_URL'] = proxy
     if debug: settings['LOG_ENABLED'] = True
+    if delay: settings['DOWNLOAD_DELAY'] = delay
 
     process = CrawlerProcess(settings)
     sched = TwistedScheduler()
-    sched.add_job(process.crawl, 'interval', args=[TrackerSpider], kwargs={'soldNum_min': min, 'Ids': product}, hours=6)
-    # sched.add_job(process.crawl, 'interval', args=[TrackerSpider], kwargs={'soldNum_min': min}, seconds=30)
-    process.crawl(TrackerSpider, soldNum_min=min, Ids=product)
-
-    sched.add_job(sched.print_jobs, 'interval', hours=6)
 
     if brand:
         sched.add_job(process.crawl, 'interval', args=[BrandSpider], kwargs={'auto': True, 'Ids': brand}, days=1)
+        process.crawl(BrandSpider, auto=True, Ids=brand)
     if serie:
         sched.add_job(process.crawl, 'interval', args=[SerieSpider], kwargs={'auto': True, 'Ids': serie}, days=1)
+        process.crawl(SerieSpider, auto=True, Ids=serie)
     if brand or serie:
         sched.add_job(process.crawl, 'interval', args=[ProductSpider], kwargs={'fromDB': True}, days=1)
+        process.crawl(ProductSpider, fromDB=True)
+    process.crawl(TrackerSpider, soldNum_min=min, Ids=product)
+
+    sched.add_job(process.crawl, 'interval', args=[TrackerSpider], kwargs={'soldNum_min': min, 'Ids': product}, hours=6)
+    if news:
+        sched.add_job(process.crawl, 'interval', args=[TrackerSpider], kwargs={'newItem': True, 'days': days},
+                      hours=1)
+
+    sched.add_job(sched.print_jobs, 'interval', hours=6)
 
     log.info('开始商品价格追踪')
     sched.start()
     process.start(False)
+
 
 if __name__ == '__main__':
     cli()

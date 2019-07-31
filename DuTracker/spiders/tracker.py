@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import scrapy
 import json
+import arrow
 
 from DuTracker.items import PriceItem
 from DuTracker.db import *
@@ -19,18 +20,30 @@ class TrackerSpider(scrapy.Spider):
 
     soldNum_min = 50
     Ids = []
+    newItem = False  # 适用于商品发售初期
+    days = 14
 
     @db_session
+    def get_items(self):
+        pools = []
+        if not self.newItem:
+            for p in Product.select(lambda p: p.soldNum > self.soldNum_min).order_by(desc(Product.soldNum)):
+                pools.append(p)
+            for pid in self.Ids:
+                if Product.exists(id=pid):
+                    pools.append(Product[pid])
+                else:
+                    log.fail(f'商品编号:{pid} 不存在数据库')
+        else:
+            for p in Product.select():
+                delay = arrow.now() - arrow.get(p.datetime, 'YYYY-MM-DD HH:mm:ss')
+                if delay.days < self.days: pools.append(p)
+
+        return pools
+
     def start_requests(self):
         log.info(f'选取商品销量高于 {self.soldNum_min} 开始追踪')
-        pools = []
-        for p in Product.select(lambda p: p.soldNum > self.soldNum_min).order_by(desc(Product.soldNum)):
-            pools.append(p)
-        for pid in self.Ids:
-            if Product.exists(id=pid):
-                pools.append(Product[pid])
-            else:
-                log.fail(f'商品编号:{pid} 不存在数据库')
+        pools = self.get_items()
 
         for p in pools:
             yield scrapy.Request(p.url, meta={
@@ -74,3 +87,10 @@ class TrackerSpider(scrapy.Spider):
                 price=item['price'] / 100,
                 soldNum=soldNum,
             )
+
+# if __name__ == '__main__':
+#     with db_session:
+#         for p in Product.select():
+#             delay = arrow.now() - arrow.get(p.datetime, 'YYYY-MM-DD HH:mm:ss')
+#             if delay.days < 60:
+#                 print(p.title, p.datetime)
