@@ -13,6 +13,7 @@ click = "*"
 "js2py" = "*"
 apscheduler = "*"
 influxdb = "*"
+pyexecjs = "*"
 
 [requires]
 python_version = "3.6"
