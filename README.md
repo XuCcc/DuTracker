@@ -1,12 +1,9 @@
 <h1 align="center">DuTracker</h1>
 
 
-### 毒接口已更新，此项目已失效，需要更新
-
-> 现在上班了，等有空再更新😕
+:warning: 现在每天要板砖了 此项目不再维护 部分接口已失效
 
 ---
-
 
 
 本项目旨在追踪 [毒-运动x潮流x装备](http://m.poizon.com/website/pc)各个商品价格变化
